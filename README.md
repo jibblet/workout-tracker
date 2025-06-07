@@ -76,8 +76,6 @@ docker run -d -p 5000:5000 \
 ```
 
 ### 🧰 Docker Compose (recommended)
-Create the file first at ./app.db so that docker doesn't assume its a directory.
-
 ```yaml
 version: '3.8'
 services:
@@ -88,9 +86,9 @@ services:
       - "5000:5000"  # host:container (change host port if you want, e.g. "272:5000")
     environment:
       - PORT=5000
-      - SQLITE_DB_PATH=sqlite:////app/app.db
+      - SQLITE_DB_PATH=sqlite:////app/data/app.db
     volumes:
-      - ./app.db:/app/app.db
+      - ./data:/app/data
 ```
 Start with:
 ```docker-compose up -d```
