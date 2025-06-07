@@ -35,4 +35,12 @@ class Exercise(db.Model):
     # Cardio fields
     distance = db.Column(Float)  # allows for integers and floats e.g. 10 or 7.5
 
+    # Comments field
+    comments = db.Column(db.Text, nullable=True)  # Optional workout notes
+    
+    # Structured feedback for AI analysis
+    difficulty_rating = db.Column(db.Integer, nullable=True)  # 1-5 scale
+    pain_level = db.Column(db.Integer, nullable=True)        # 0-5 scale
+    tags = db.Column(db.String(200), nullable=True)          # JSON string of selected tags
+
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

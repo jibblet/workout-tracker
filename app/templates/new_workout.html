@@ -44,12 +44,6 @@
                        value="{{ workout.exercise if workout else '' }}"
                        class="w-full border rounded p-2 mt-1">
             </div>
-            <div class="mb-4">
-                    <label class="block font-semibold">Duration (minutes)</label>
-                    <input required type="number" step="any" name="duration" 
-                           value="{{ workout.duration if workout and workout.duration else '' }}"
-                           class="w-full border rounded p-2 mt-1">
-                </div>
 
             <!-- Strength Fields -->
             <div id="strengthFields">
@@ -79,10 +73,99 @@
             <!-- Cardio Fields -->
             <div id="cardioFields" style="display: none;">
                 <div class="mb-4">
+                    <label class="block font-semibold">Duration (minutes)</label>
+                    <input type="number" step="any" name="duration" id="cardio_duration"
+                           value="{{ workout.duration if workout and workout.duration else '' }}"
+                           class="w-full border rounded p-2 mt-1">
+                </div>
+                <div class="mb-4">
                     <label class="block font-semibold">Distance</label>
                     <input type="number" step="any" name="distance"
                            value="{{ workout.distance if workout and workout.distance else '' }}"
                            class="w-full border rounded p-2 mt-1">
+                </div>
+            </div>
+
+            <!-- Workout Feedback Section -->
+            <div class="mb-6 p-4 border rounded bg-gray-50">
+                <h3 class="text-lg font-semibold mb-3">Workout Feedback</h3>
+                
+                <!-- Difficulty Rating -->
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2">Difficulty Level</label>
+                    <div class="flex gap-2">
+                        {% for i in range(1, 6) %}
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="difficulty_rating" value="{{ i }}" 
+                                   {% if workout and workout.difficulty_rating == i %}checked{% endif %}
+                                   class="sr-only peer">
+                            <div class="w-8 h-8 rounded border-2 border-yellow-300 flex items-center justify-center 
+                                        peer-checked:bg-yellow-400 peer-checked:text-white hover:bg-yellow-200">
+                                ⭐
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">1 = Very Easy, 5 = Very Hard</p>
+                </div>
+
+                <!-- Pain/Discomfort Level -->
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2">Discomfort Level</label>
+                    <div class="flex gap-2">
+                        {% for i in range(0, 6) %}
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="pain_level" value="{{ i }}" 
+                                   {% if workout and workout.pain_level == i %}checked{% endif %}
+                                   class="sr-only peer">
+                            <div class="w-8 h-8 rounded border-2 flex items-center justify-center text-xs font-bold
+                                        {% if i == 0 %}border-green-300 peer-checked:bg-green-400 peer-checked:text-white hover:bg-green-200{% endif %}
+                                        {% if i == 1 %}border-yellow-300 peer-checked:bg-yellow-400 peer-checked:text-white hover:bg-yellow-200{% endif %}
+                                        {% if i == 2 %}border-orange-300 peer-checked:bg-orange-400 peer-checked:text-white hover:bg-orange-200{% endif %}
+                                        {% if i >= 3 %}border-red-300 peer-checked:bg-red-400 peer-checked:text-white hover:bg-red-200{% endif %}">
+                                {{ i }}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">0 = No Discomfort, 5 = Severe Pain</p>
+                </div>
+
+                <!-- Quick Tags -->
+                <div class="mb-4">
+                    <label class="block font-semibold mb-2">Quick Tags</label>
+                    <div class="flex flex-wrap gap-2">
+                        {% set tag_options = [
+                            ('💪', 'felt_strong', 'Felt Strong'),
+                            ('😤', 'struggled', 'Struggled'),
+                            ('⚠️', 'form_issues', 'Form Issues'),
+                            ('🎯', 'perfect_form', 'Perfect Form'),
+                            ('🔥', 'great_pump', 'Great Pump'),
+                            ('😴', 'low_energy', 'Low Energy'),
+                            ('⏰', 'rushed', 'Rushed'),
+                            ('🧘', 'focused', 'Very Focused')
+                        ] %}
+                        {% for emoji, value, label in tag_options %}
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" name="tags" value="{{ value }}" 
+                                   {% if workout and workout.tags and value in (workout.tags.split(',') if workout.tags else []) %}checked{% endif %}
+                                   class="sr-only peer">
+                            <div class="px-3 py-1 rounded-full border border-gray-300 text-sm 
+                                        peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 
+                                        hover:bg-blue-100">
+                                {{ emoji }} {{ label }}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Comments Field -->
+                <div class="mb-4">
+                    <label class="block font-semibold">Additional Notes <span class="text-gray-500">(optional)</span></label>
+                    <textarea name="comments" rows="3" 
+                              placeholder="Any additional details about this workout..."
+                              class="w-full border rounded p-2 mt-1">{{ workout.comments if workout and workout.comments else '' }}</textarea>
                 </div>
             </div>
 
@@ -124,6 +207,7 @@
 
         function toggleFields() {
             const type = typeSelect.value;
+            
             if (type === 'cardio') {
                 strengthFields.style.display = 'none';
                 cardioFields.style.display = 'block';

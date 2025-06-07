@@ -35,9 +35,17 @@ def add_workout():
         exercise = request.form['exercise']
         workout_type = request.form['type']
         user_id = session['user_id']
-        duration = float(request.form['duration'])
+        comments = request.form.get('comments', '').strip() or None
+        
+        # Structured feedback
+        difficulty_rating = int(request.form.get('difficulty_rating')) if request.form.get('difficulty_rating') else None
+        pain_level = int(request.form.get('pain_level')) if request.form.get('pain_level') else None
+        selected_tags = request.form.getlist('tags')
+        tags = ','.join(selected_tags) if selected_tags else None
 
         if workout_type == 'cardio':
+            # Only get duration for cardio workouts
+            duration = float(request.form.get('duration', 0)) if request.form.get('duration') else None
             new_workout = Exercise(
                 date=date,
                 exercise=exercise,
@@ -47,9 +55,14 @@ def add_workout():
                 sets=0,
                 reps=0,
                 weights=None,
+                comments=comments,
+                difficulty_rating=difficulty_rating,
+                pain_level=pain_level,
+                tags=tags,
                 user_id=user_id
             )
         else:
+            # Strength workouts do not have duration
             sets = int(request.form['sets']) if request.form['sets'] else 0
             reps = int(request.form['reps']) if request.form['reps'] else 0
             weight_inputs = [
@@ -65,7 +78,11 @@ def add_workout():
                 reps=reps,
                 weights=weights if weights else None,
                 distance=None,
-                duration=duration,
+                duration=None,  # No duration for strength exercises
+                comments=comments,
+                difficulty_rating=difficulty_rating,
+                pain_level=pain_level,
+                tags=tags,
                 user_id=user_id
             )
 
@@ -91,9 +108,17 @@ def edit_workout(workout_id):
     if request.method == 'POST':
         workout.exercise = request.form['exercise']
         workout.type = request.form['type']
-        workout.duration = request.form['duration']
+        workout.comments = request.form.get('comments', '').strip() or None
+        
+        # Update structured feedback
+        workout.difficulty_rating = int(request.form.get('difficulty_rating')) if request.form.get('difficulty_rating') else None
+        workout.pain_level = int(request.form.get('pain_level')) if request.form.get('pain_level') else None
+        selected_tags = request.form.getlist('tags')
+        workout.tags = ','.join(selected_tags) if selected_tags else None
 
         if workout.type == 'strength':
+            # Strength workouts do not have duration
+            workout.duration = None
             workout.sets = int(request.form['sets']) if request.form['sets'] else 0
             workout.reps = int(request.form['reps']) if request.form['reps'] else 0
 
@@ -107,6 +132,8 @@ def edit_workout(workout_id):
             workout.distance = None
 
         elif workout.type == 'cardio':
+            # Only cardio workouts have duration
+            workout.duration = float(request.form.get('duration', 0)) if request.form.get('duration') else None
             workout.sets = 0
             workout.reps = 0
             workout.weights = None
@@ -318,7 +345,7 @@ def download_workouts():
     cw = csv.writer(si)
     
     # Write header
-    cw.writerow(['Date', 'Type', 'Exercise', 'Sets', 'Reps', 'Weights', 'Distance', 'Duration'])
+    cw.writerow(['Date', 'Type', 'Exercise', 'Sets', 'Reps', 'Weights', 'Distance', 'Duration', 'Difficulty', 'Pain_Level', 'Tags', 'Comments'])
 
     # Write workout data
     for w in workouts:
@@ -330,7 +357,11 @@ def download_workouts():
             w.reps or '',
             w.weights or '',
             w.distance or '',
-            w.duration or ''
+            w.duration or '',
+            w.difficulty_rating or '',
+            w.pain_level or '',
+            w.tags or '',
+            w.comments or ''
         ])
 
     output = si.getvalue()
