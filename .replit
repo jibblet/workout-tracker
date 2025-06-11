@@ -18,3 +18,7 @@ args = "python -m app.init_app"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python run.py"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
