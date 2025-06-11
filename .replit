@@ -1,0 +1,20 @@
+modules = ["web", "python-3.12", "bash"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Initialize and Run"
+
+[[workflows.workflow]]
+name = "Initialize and Run"
+author = 42591739
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m app.init_app"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python run.py"
