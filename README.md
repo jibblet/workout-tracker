@@ -1,3 +1,5 @@
+#FULL credit to Author @enrique-paulino for original design and function. 
+
 # 🏋️‍♂️ Workout Tracker
 
 A simple and self-hostable workout tracking web app built with **Flask**, **SQLite**, and **Docker**.
