@@ -44,3 +44,21 @@ class Exercise(db.Model):
     tags = db.Column(db.String(200), nullable=True)          # JSON string of selected tags
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+class WorkoutTemplate(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)  # e.g., "A Day", "B Day", "C Day"
+    description = db.Column(db.String(200), nullable=True)  # e.g., "Bicep and Chest"
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    exercises = db.relationship('TemplateExercise', backref='template', lazy=True, cascade='all, delete-orphan')
+
+class TemplateExercise(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    exercise_name = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(20), nullable=False, default='strength')  # strength or cardio
+    default_sets = db.Column(db.Integer, nullable=True)
+    default_reps = db.Column(db.Integer, nullable=True)
+    default_weight = db.Column(db.String(100), nullable=True)
+    default_distance = db.Column(Float, nullable=True)
+    default_duration = db.Column(Float, nullable=True)
+    template_id = db.Column(db.Integer, db.ForeignKey('workout_template.id'), nullable=False)

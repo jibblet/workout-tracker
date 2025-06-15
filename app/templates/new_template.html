@@ -1,0 +1,243 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ 'Edit' if template else 'New' }} Template | Workout Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body class="bg-gray-100 p-6 font-sans">
+
+    {% include 'navbar.html' %}
+
+    <div class="max-w-4xl mx-auto bg-white shadow-md p-6 rounded-lg">
+        <div class="mb-4">
+            <a href="{{ url_for('main.templates') }}" 
+               class="inline-block bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 text-sm">
+                ← Back to Templates
+            </a>
+        </div>
+
+        <h2 class="text-2xl font-bold mb-6">{{ 'Edit' if template else 'New' }} Workout Template</h2>
+
+        <form method="POST" id="templateForm">
+            <div class="mb-4">
+                <label class="block font-semibold">Template Name</label>
+                <input type="text" name="name" required
+                       value="{{ template.name if template else '' }}"
+                       placeholder="e.g., A Day, Push Day, Leg Day"
+                       class="w-full border rounded p-2 mt-1">
+            </div>
+
+            <div class="mb-6">
+                <label class="block font-semibold">Description (optional)</label>
+                <input type="text" name="description"
+                       value="{{ template.description if template else '' }}"
+                       placeholder="e.g., Bicep and Chest Focused"
+                       class="w-full border rounded p-2 mt-1">
+            </div>
+
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold">Exercises</h3>
+                    <button type="button" id="addExercise" 
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                        + Add Exercise
+                    </button>
+                </div>
+
+                <div id="exercisesList" class="space-y-4">
+                    {% if template %}
+                        {% for exercise in template.exercises %}
+                        <div class="exercise-item border rounded p-4 bg-gray-50">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-medium">Exercise {{ loop.index }}</h4>
+                                <button type="button" class="remove-exercise text-red-500 hover:text-red-700">×</button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                <div>
+                                    <label class="block text-sm font-medium">Name</label>
+                                    <input type="text" name="exercise_{{ loop.index0 }}_name" required
+                                           value="{{ exercise.exercise_name }}"
+                                           class="w-full border rounded p-2 mt-1">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium">Type</label>
+                                    <select name="exercise_{{ loop.index0 }}_type" required class="exercise-type w-full border rounded p-2 mt-1">
+                                        <option value="strength" {% if exercise.type == 'strength' %}selected{% endif %}>Strength</option>
+                                        <option value="cardio" {% if exercise.type == 'cardio' %}selected{% endif %}>Cardio</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="strength-fields {% if exercise.type == 'cardio' %}hidden{% endif %}">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium">Default Sets</label>
+                                        <input type="number" name="exercise_{{ loop.index0 }}_sets"
+                                               value="{{ exercise.default_sets or '' }}"
+                                               class="w-full border rounded p-2 mt-1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium">Default Reps</label>
+                                        <input type="number" name="exercise_{{ loop.index0 }}_reps"
+                                               value="{{ exercise.default_reps or '' }}"
+                                               class="w-full border rounded p-2 mt-1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium">Default Weight</label>
+                                        <input type="text" name="exercise_{{ loop.index0 }}_weight"
+                                               value="{{ exercise.default_weight or '' }}"
+                                               placeholder="e.g., 20kg"
+                                               class="w-full border rounded p-2 mt-1">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cardio-fields {% if exercise.type == 'strength' %}hidden{% endif %}">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium">Default Duration (mins)</label>
+                                        <input type="number" step="any" name="exercise_{{ loop.index0 }}_duration"
+                                               value="{{ exercise.default_duration or '' }}"
+                                               class="w-full border rounded p-2 mt-1">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium">Default Distance</label>
+                                        <input type="number" step="any" name="exercise_{{ loop.index0 }}_distance"
+                                               value="{{ exercise.default_distance or '' }}"
+                                               class="w-full border rounded p-2 mt-1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <input type="hidden" name="exercise_count" id="exerciseCount" value="{{ template.exercises|length if template else 0 }}">
+
+            <div class="flex space-x-4">
+                <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                    {{ 'Update' if template else 'Create' }} Template
+                </button>
+                <a href="{{ url_for('main.templates') }}" 
+                   class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let exerciseCount = {{ template.exercises|length if template else 0 }};
+
+        document.getElementById('addExercise').addEventListener('click', function() {
+            const exercisesList = document.getElementById('exercisesList');
+            const exerciseItem = document.createElement('div');
+            exerciseItem.className = 'exercise-item border rounded p-4 bg-gray-50';
+            
+            exerciseItem.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <h4 class="font-medium">Exercise ${exerciseCount + 1}</h4>
+                    <button type="button" class="remove-exercise text-red-500 hover:text-red-700">×</button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium">Name</label>
+                        <input type="text" name="exercise_${exerciseCount}_name" required
+                               class="w-full border rounded p-2 mt-1">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">Type</label>
+                        <select name="exercise_${exerciseCount}_type" required class="exercise-type w-full border rounded p-2 mt-1">
+                            <option value="strength">Strength</option>
+                            <option value="cardio">Cardio</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="strength-fields">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium">Default Sets</label>
+                            <input type="number" name="exercise_${exerciseCount}_sets"
+                                   class="w-full border rounded p-2 mt-1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Default Reps</label>
+                            <input type="number" name="exercise_${exerciseCount}_reps"
+                                   class="w-full border rounded p-2 mt-1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Default Weight</label>
+                            <input type="text" name="exercise_${exerciseCount}_weight"
+                                   placeholder="e.g., 20kg"
+                                   class="w-full border rounded p-2 mt-1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cardio-fields hidden">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium">Default Duration (mins)</label>
+                            <input type="number" step="any" name="exercise_${exerciseCount}_duration"
+                                   class="w-full border rounded p-2 mt-1">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Default Distance</label>
+                            <input type="number" step="any" name="exercise_${exerciseCount}_distance"
+                                   class="w-full border rounded p-2 mt-1">
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            exercisesList.appendChild(exerciseItem);
+            exerciseCount++;
+            document.getElementById('exerciseCount').value = exerciseCount;
+            
+            // Add event listeners for the new exercise
+            setupExerciseListeners(exerciseItem);
+        });
+
+        function setupExerciseListeners(item) {
+            const removeBtn = item.querySelector('.remove-exercise');
+            const typeSelect = item.querySelector('.exercise-type');
+            
+            removeBtn.addEventListener('click', function() {
+                item.remove();
+                updateExerciseCount();
+            });
+            
+            typeSelect.addEventListener('change', function() {
+                const strengthFields = item.querySelector('.strength-fields');
+                const cardioFields = item.querySelector('.cardio-fields');
+                
+                if (this.value === 'strength') {
+                    strengthFields.classList.remove('hidden');
+                    cardioFields.classList.add('hidden');
+                } else {
+                    strengthFields.classList.add('hidden');
+                    cardioFields.classList.remove('hidden');
+                }
+            });
+        }
+
+        function updateExerciseCount() {
+            const items = document.querySelectorAll('.exercise-item');
+            exerciseCount = items.length;
+            document.getElementById('exerciseCount').value = exerciseCount;
+        }
+
+        // Setup existing exercise listeners
+        document.querySelectorAll('.exercise-item').forEach(setupExerciseListeners);
+    </script>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 import os
 from app import create_app, db
-from app.models import User
+from app.models import User, WorkoutTemplate, TemplateExercise
 from werkzeug.security import generate_password_hash
 from flask_migrate import upgrade
 from sqlalchemy import inspect
@@ -8,7 +8,7 @@ from sqlalchemy import inspect
 def initialise_app():
     app = create_app()
     with app.app_context():
-        
+
         inspector = inspect(db.engine)
         if not inspector.get_table_names():
             print("No tables found — initialising database...")

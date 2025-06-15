@@ -41,6 +41,37 @@
                 </a>
             </div>
 
+            <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">{{ formatted_date }}</h2>
+            <a href="{{ url_for('main.add_workout', date=date) }}" 
+               class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                + Add Exercise
+            </a>
+        </div>
+
+        <!-- Workout Templates Section -->
+        {% if templates %}
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg border">
+            <h3 class="text-lg font-semibold mb-3 text-blue-800">Quick Start - Use Workout Template:</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {% for template in templates %}
+                <div class="bg-white p-3 rounded border shadow-sm">
+                    <h4 class="font-semibold text-gray-800">{{ template.name }}</h4>
+                    {% if template.description %}
+                    <p class="text-sm text-gray-600 mb-2">{{ template.description }}</p>
+                    {% endif %}
+                    <p class="text-xs text-gray-500 mb-2">{{ template.exercises|length }} exercises</p>
+                    <a href="{{ url_for('main.use_template', template_id=template.id, date=date) }}" 
+                       class="inline-block bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
+                       onclick="return confirm('This will add all exercises from {{ template.name }} to {{ formatted_date }}. Continue?')">
+                        Use Template
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
             <!-- Workout List -->
             {% for workout in workouts %}
                 <div class="mb-4 p-3 rounded border bg-gray-50 flex justify-between items-center">
@@ -72,7 +103,7 @@
                             </div>
                             {% endif %}
                         {% endif %}
-                        
+
                         <!-- Structured Feedback Display -->
                         {% if workout.difficulty_rating or workout.pain_level or workout.tags %}
                             <div class="mt-2 flex flex-wrap gap-2 text-xs">
@@ -113,7 +144,7 @@
                                 {% endif %}
                             </div>
                         {% endif %}
-                        
+
                         {% if workout.comments %}
                             <div class="mt-2 text-sm text-gray-600 italic bg-blue-50 p-2 rounded border-l-2 border-blue-300">
                                 <span class="font-medium">Notes:</span> {{ workout.comments }}
