@@ -37,13 +37,45 @@ class Exercise(db.Model):
 
     # Comments field
     comments = db.Column(db.Text, nullable=True)  # Optional workout notes
-    
+
     # Structured feedback for AI analysis
     difficulty_rating = db.Column(db.Integer, nullable=True)  # 1-5 scale
     pain_level = db.Column(db.Integer, nullable=True)        # 0-5 scale
     tags = db.Column(db.String(200), nullable=True)          # JSON string of selected tags
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    @property
+    def total_volume(self):
+        """Calculate total volume for strength exercises (sets × reps × weight)"""
+        if self.type != 'strength' or not self.sets or not self.reps or not self.weights:
+            return 0
+
+        try:
+            # Handle multiple weights separated by '/'
+            weights = [float(w.strip()) for w in self.weights.split('/') if w.strip()]
+            if not weights:
+                return 0
+
+            # Calculate volume per set and sum them up
+            total_vol = 0
+            for i, weight in enumerate(weights):
+                # If fewer weights than sets, use the last weight for remaining sets
+                if i < self.sets:
+                    total_vol += self.reps * weight
+                else:
+                    # Use the last available weight for remaining sets
+                    total_vol += self.reps * weights[-1] * (self.sets - len(weights))
+                    break
+
+            # If we have fewer weight entries than sets, multiply the remaining sets
+            if len(weights) < self.sets:
+                remaining_sets = self.sets - len(weights)
+                total_vol += remaining_sets * self.reps * weights[-1]
+
+            return total_vol
+        except (ValueError, IndexError):
+            return 0
 
 class WorkoutTemplate(db.Model):
     id = db.Column(db.Integer, primary_key=True)

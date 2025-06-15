@@ -99,7 +99,12 @@
                                 </div>
                                 {% if workout.weights %}
                                     {{ workout.weights }} {% if user.units == 'imperial' %}lbs{% else %}kg{% endif %}
-                                {% endif %} 
+                                {% endif %}
+                                {% if workout.total_volume > 0 %}
+                                    <div class="mt-1">
+                                        <span class="font-semibold text-green-600">Volume: {{ workout.total_volume|round|int }} {% if user.units == 'imperial' %}lbs{% else %}kg{% endif %}</span>
+                                    </div>
+                                {% endif %}
                             </div>
                             {% endif %}
                         {% endif %}

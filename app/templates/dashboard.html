@@ -13,7 +13,7 @@
     {% include 'navbar.html' %}
 
     <div class="max-w-xl mx-auto">
-        
+
         <div class="flex justify-center mb-4">
             <div class="inline-flex items-center bg-gray-200 rounded-lg p-1 text-sm font-medium">
                 <a href="{{ url_for('main.dashboard', period='week') }}"
@@ -68,12 +68,98 @@
 
             <div class="bg-white rounded-lg shadow-md p-4 mb-4">
                 <h4 class="text-lg font-semibold text-gray-700 mb-1">Total Weight Lifted</h4>
-                <p class="text-2xl text-green-600 font-bold">{{ total_strength_volume }} kg</p>
+                <p class="text-2xl text-green-600 font-bold">{{ total_strength_volume }} {% if user.units == 'imperial' %}lbs{% else %}kg{% endif %}</p>
             </div>
 
-            
+        </div>
 
+        <!-- Volume Analysis Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Volume Trends -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Volume Trends</h3>
 
+                {% if volume_trends.recent_change_pct is defined %}
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600">Week-over-week change:</p>
+                    <p class="text-lg font-semibold 
+                       {% if volume_trends.recent_change_pct > 0 %}text-green-600
+                       {% elif volume_trends.recent_change_pct < 0 %}text-red-600
+                       {% else %}text-gray-600{% endif %}">
+                        {{ volume_trends.recent_change_pct }}%
+                        {% if volume_trends.recent_change_pct > 0 %}↗️
+                        {% elif volume_trends.recent_change_pct < 0 %}↘️
+                        {% else %}➡️{% endif %}
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Recommendations -->
+                {% if volume_trends.recommendations %}
+                <div class="mt-4">
+                    <h4 class="font-semibold text-gray-700 mb-2">Recommendations:</h4>
+                    <ul class="text-sm space-y-1">
+                        {% for recommendation in volume_trends.recommendations %}
+                        <li class="flex items-start">
+                            <span class="text-blue-500 mr-2">•</span>
+                            <span class="text-gray-700">{{ recommendation }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Weekly Progression -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Weekly Volume Progression</h3>
+                {% if weekly_progression %}
+                <div class="space-y-2">
+                    {% for week, data in weekly_progression.items() %}
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-sm font-medium text-gray-700">{{ week }}</span>
+                        <div class="text-right">
+                            <span class="text-sm font-semibold">{{ data.total_volume|round|int }} {% if user.units == 'imperial' %}lbs{% else %}kg{% endif %}</span>
+                            <span class="text-xs text-gray-500 block">{{ data.workout_count }} workouts</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top Exercises by Volume -->
+        {% if volume_by_exercise %}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Volume by Exercise ({{ period.title() }})</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for exercise, volume in volume_by_exercise.items() %}
+                {% if volume > 0 %}
+                <div class="bg-gray-50 rounded p-3">
+                    <h4 class="font-semibold text-gray-800 truncate">{{ exercise }}</h4>
+                    <p class="text-lg text-green-600 font-bold">{{ volume|round|int }} {% if user.units == 'imperial' %}lbs{% else %}kg{% endif %}</p>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Export Section -->
+        <div class="bg-blue-50 rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">AI Analysis Export</h3>
+            <p class="text-gray-600 mb-4">Export your comprehensive workout data for LLM analysis and personalized training recommendations.</p>
+            <div class="flex gap-4">
+                <a href="{{ url_for('main.export_analysis') }}" 
+                   class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    📊 Export Analysis Data (JSON)
+                </a>
+                <a href="{{ url_for('main.download_workouts') }}" 
+                   class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    📋 Export Raw Data (CSV)
+                </a>
+            </div>
         </div>
 
     </div>

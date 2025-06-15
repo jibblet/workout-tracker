@@ -3,6 +3,7 @@ from .models import db, Exercise, User, WorkoutTemplate, TemplateExercise
 from .utils import *
 from datetime import datetime, timedelta
 import csv
+import json
 from io import StringIO
 import string
 import secrets
@@ -346,7 +347,7 @@ def download_workouts():
     cw = csv.writer(si)
 
     # Write header
-    cw.writerow(['Date', 'Type', 'Exercise', 'Sets', 'Reps', 'Weights', 'Distance', 'Duration', 'Difficulty', 'Pain_Level', 'Tags', 'Comments'])
+    cw.writerow(['Date', 'Type', 'Exercise', 'Sets', 'Reps', 'Weights', 'Distance', 'Duration', 'Total_Volume', 'Difficulty', 'Pain_Level', 'Tags', 'Comments'])
 
     # Write workout data
     for w in workouts:
@@ -359,6 +360,7 @@ def download_workouts():
             w.weights or '',
             w.distance or '',
             w.duration or '',
+            w.total_volume if w.type == 'strength' else '',
             w.difficulty_rating or '',
             w.pain_level or '',
             w.tags or '',
@@ -372,6 +374,27 @@ def download_workouts():
         output,
         mimetype="text/csv",
         headers={"Content-Disposition": "attachment;filename=workouts.csv"}
+    )
+
+@main.route('/export_analysis')
+def export_analysis():
+    user = None
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+    else:
+        return redirect(url_for('auth.login'))
+
+    # Get all exercises for comprehensive analysis
+    exercises = Exercise.query.filter_by(user_id=user.id).order_by(Exercise.date.desc()).all()
+    
+    # Generate comprehensive analysis data
+    analysis_data = export_analysis_data(user.id, exercises)
+    
+    # Return as JSON for LLM processing
+    return Response(
+        json.dumps(analysis_data, indent=2, default=str),
+        mimetype="application/json",
+        headers={"Content-Disposition": "attachment;filename=workout_analysis.json"}
     )
 
 # ---------- Workout Templates ----------
@@ -571,6 +594,11 @@ def dashboard():
 
     fastest_pace_formatted = get_fastest_pace(exercises)
 
+    # Add volume analysis
+    volume_by_exercise = get_total_volume_by_exercise(exercises)
+    weekly_progression = get_weekly_volume_progression(exercises, 4)
+    volume_trends = analyze_volume_trends(weekly_progression)
+
     return render_template('dashboard.html',
                            period=period,                    
                            workout_duration_graph_labels=workout_duration_graph_labels,
@@ -582,4 +610,7 @@ def dashboard():
                            total_cardio_distance=total_cardio_distance,
                            fastest_pace_formatted=fastest_pace_formatted,
                            total_strength_volume=total_strength_volume,
+                           volume_by_exercise=volume_by_exercise,
+                           weekly_progression=weekly_progression,
+                           volume_trends=volume_trends,
     )
