@@ -11,6 +11,15 @@
     <div class="px-4 py-3 flex items-center justify-between">
       <div class="text-xl font-semibold text-gray-700"><a href="{{ url_for('main.index') }}">Workout Tracker</a></div>
 
+      <!-- Main Navigation Links -->
+      {% if user %}
+      <div class="hidden md:flex space-x-6">
+        <a href="{{ url_for('main.index') }}" class="text-gray-700 hover:text-blue-600 transition">Workouts</a>
+        <a href="{{ url_for('main.templates') }}" class="text-gray-700 hover:text-blue-600 transition">Templates</a>
+        <a href="{{ url_for('main.dashboard') }}" class="text-gray-700 hover:text-blue-600 transition">Statistics</a>
+      </div>
+      {% endif %}
+
       {% if user %}
       <div x-data="{ open: false }" class="relative">
         <!-- Person Icon Button -->
@@ -32,7 +41,13 @@
             {{ user.username }}
           </div>
 
-          <a href="{{ url_for('main.dashboard')}}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Statistics</a>
+          <!-- Mobile Navigation Links (visible on small screens) -->
+          <div class="md:hidden border-b">
+            <a href="{{ url_for('main.index') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Workouts</a>
+            <a href="{{ url_for('main.templates') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Templates</a>
+            <a href="{{ url_for('main.dashboard')}}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Statistics</a>
+          </div>
+
           <a href="{{ url_for('main.settings')}}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Settings</a>
           {% if user and user.is_admin %}
               <a href="{{ url_for('main.admin') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Admin</a>
