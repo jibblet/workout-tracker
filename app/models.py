@@ -61,4 +61,5 @@ class TemplateExercise(db.Model):
     default_weight = db.Column(db.String(100), nullable=True)
     default_distance = db.Column(Float, nullable=True)
     default_duration = db.Column(Float, nullable=True)
+    notes = db.Column(db.Text, nullable=True)  # Exercise-specific notes/reminders
     template_id = db.Column(db.Integer, db.ForeignKey('workout_template.id'), nullable=False)

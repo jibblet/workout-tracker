@@ -17,7 +17,7 @@ def index():
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     date_str = request.args.get("date", datetime.today().strftime("%Y-%m-%d"))
     formatted_date = format_date_pretty(date_str)
     workouts = Exercise.query.filter_by(date=date_str, user_id=user.id).all()
@@ -37,7 +37,7 @@ def add_workout():
         workout_type = request.form['type']
         user_id = session['user_id']
         comments = request.form.get('comments', '').strip() or None
-        
+
         # Structured feedback
         difficulty_rating = int(request.form.get('difficulty_rating')) if request.form.get('difficulty_rating') else None
         pain_level = int(request.form.get('pain_level')) if request.form.get('pain_level') else None
@@ -110,7 +110,7 @@ def edit_workout(workout_id):
         workout.exercise = request.form['exercise']
         workout.type = request.form['type']
         workout.comments = request.form.get('comments', '').strip() or None
-        
+
         # Update structured feedback
         workout.difficulty_rating = int(request.form.get('difficulty_rating')) if request.form.get('difficulty_rating') else None
         workout.pain_level = int(request.form.get('pain_level')) if request.form.get('pain_level') else None
@@ -168,10 +168,10 @@ def admin():
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     if not user.is_admin:
         return redirect(url_for('main.index'))
-    
+
     users = User.query.all()
     return render_template('admin.html', users=users)
 
@@ -222,7 +222,7 @@ def revoke_admin(user_id):
     if not admin_user or not admin_user.is_admin:
         flash('Access denied', 'error')
         return redirect(url_for('main.index'))
-    
+
     admin_count = User.query.filter_by(is_admin=True).count()
     if admin_count <= 1:
         flash('Cannot revoke admin privileges from the last remaining admin.', 'error')
@@ -339,12 +339,12 @@ def download_workouts():
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     workouts = Exercise.query.filter_by(user_id=user.id).order_by(Exercise.date.desc()).all()
 
     si = StringIO()
     cw = csv.writer(si)
-    
+
     # Write header
     cw.writerow(['Date', 'Type', 'Exercise', 'Sets', 'Reps', 'Weights', 'Distance', 'Duration', 'Difficulty', 'Pain_Level', 'Tags', 'Comments'])
 
@@ -383,7 +383,7 @@ def templates():
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     templates = WorkoutTemplate.query.filter_by(user_id=user.id).all()
     return render_template('templates.html', templates=templates)
 
@@ -394,11 +394,11 @@ def new_template():
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     if request.method == 'POST':
         name = request.form['name']
         description = request.form.get('description', '')
-        
+
         template = WorkoutTemplate(
             name=name,
             description=description,
@@ -406,7 +406,7 @@ def new_template():
         )
         db.session.add(template)
         db.session.flush()  # Get the ID
-        
+
         # Add exercises
         exercise_count = int(request.form.get('exercise_count', 0))
         for i in range(exercise_count):
@@ -421,14 +421,15 @@ def new_template():
                     default_weight=request.form.get(f'exercise_{i}_weight') or None,
                     default_distance=float(request.form.get(f'exercise_{i}_distance')) if request.form.get(f'exercise_{i}_distance') else None,
                     default_duration=float(request.form.get(f'exercise_{i}_duration')) if request.form.get(f'exercise_{i}_duration') else None,
+                    notes=request.form.get(f'exercise_{i}_notes') or None,
                     template_id=template.id
                 )
                 db.session.add(template_exercise)
-        
+
         db.session.commit()
         flash('Workout template created successfully!', 'success')
         return redirect(url_for('main.templates'))
-    
+
     return render_template('new_template.html')
 
 @main.route('/templates/edit/<int:template_id>', methods=['GET', 'POST'])
@@ -438,18 +439,18 @@ def edit_template(template_id):
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     template = WorkoutTemplate.query.get_or_404(template_id)
     if template.user_id != user.id:
         abort(403)
-    
+
     if request.method == 'POST':
         template.name = request.form['name']
         template.description = request.form.get('description', '')
-        
+
         # Delete existing exercises and add new ones
         TemplateExercise.query.filter_by(template_id=template.id).delete()
-        
+
         exercise_count = int(request.form.get('exercise_count', 0))
         for i in range(exercise_count):
             exercise_name = request.form.get(f'exercise_{i}_name')
@@ -463,14 +464,15 @@ def edit_template(template_id):
                     default_weight=request.form.get(f'exercise_{i}_weight') or None,
                     default_distance=float(request.form.get(f'exercise_{i}_distance')) if request.form.get(f'exercise_{i}_distance') else None,
                     default_duration=float(request.form.get(f'exercise_{i}_duration')) if request.form.get(f'exercise_{i}_duration') else None,
+                    notes=request.form.get(f'exercise_{i}_notes') or None,
                     template_id=template.id
                 )
                 db.session.add(template_exercise)
-        
+
         db.session.commit()
         flash('Workout template updated successfully!', 'success')
         return redirect(url_for('main.templates'))
-    
+
     return render_template('new_template.html', template=template)
 
 @main.route('/templates/delete/<int:template_id>', methods=['POST'])
@@ -480,11 +482,11 @@ def delete_template(template_id):
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     template = WorkoutTemplate.query.get_or_404(template_id)
     if template.user_id != user.id:
         abort(403)
-    
+
     db.session.delete(template)
     db.session.commit()
     flash('Workout template deleted successfully!', 'success')
@@ -497,14 +499,14 @@ def use_template(template_id):
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     template = WorkoutTemplate.query.get_or_404(template_id)
     if template.user_id != user.id:
         abort(403)
-    
+
     date_str = request.args.get("date", datetime.today().strftime("%Y-%m-%d"))
     date = datetime.strptime(date_str, '%Y-%m-%d').date()
-    
+
     # Create exercises from template
     for template_exercise in template.exercises:
         new_exercise = Exercise(
@@ -519,7 +521,7 @@ def use_template(template_id):
             user_id=user.id
         )
         db.session.add(new_exercise)
-    
+
     db.session.commit()
     flash(f'Applied "{template.name}" template to {date_str}!', 'success')
     return redirect(url_for('main.index', date=date_str))
@@ -533,10 +535,10 @@ def dashboard():
         user = User.query.get(session['user_id'])
     else:
         return redirect(url_for('auth.login'))
-    
+
     period = request.args.get('period', 'week')
     today = datetime.now().date()
-    
+
     if period == 'month':
         start_date = today.replace(day=1)
         end_date = (start_date + timedelta(days=32)).replace(day=1) - timedelta(days=1)

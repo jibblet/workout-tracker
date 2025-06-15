@@ -50,6 +50,11 @@
                             {% if exercise.type == 'cardio' and exercise.default_duration %}
                                 - {{ exercise.default_duration }} mins
                             {% endif %}
+                            {% if exercise.notes %}
+                                <div class="text-xs text-blue-600 italic ml-2 mt-1">
+                                    📝 {{ exercise.notes }}
+                                </div>
+                            {% endif %}
                         </div>
                         {% endfor %}
                     </div>
