@@ -1,0 +1,58 @@
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.autogenerate.compare] Detected added column 'template_exercise.notes'
+  Generating /home/runner/workspace/migrations/versions/66d65c681429_add_notes_f
+  ield_to_templateexercise.py ...  FAILED
+Traceback (most recent call last):
+  File "/home/runner/workspace/.pythonlibs/bin/flask", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/flask/cli.py", line 1131, in main
+    cli.main()
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/click/core.py", line 1363, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/click/core.py", line 1830, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/click/core.py", line 1830, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/click/core.py", line 1226, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/click/core.py", line 794, in invoke
+    return callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/click/decorators.py", line 34, in new_func
+    return f(get_current_context(), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/flask/cli.py", line 400, in decorator
+    return ctx.invoke(f, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/click/core.py", line 794, in invoke
+    return callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/flask_migrate/cli.py", line 112, in migrate
+    _migrate(directory or g.directory, message, sql, head, splice,
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/flask_migrate/__init__.py", line 111, in wrapped
+    f(*args, **kwargs)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/flask_migrate/__init__.py", line 170, in migrate
+    command.revision(config, message, autogenerate=True, sql=sql,
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/alembic/command.py", line 243, in revision
+    scripts = [script for script in revision_context.generate_scripts()]
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/alembic/autogenerate/api.py", line 650, in generate_scripts
+    yield self._to_script(generated_revision)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/alembic/autogenerate/api.py", line 555, in _to_script
+    return self.script_directory.generate_revision(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/alembic/script/base.py", line 751, in generate_revision
+    self._generate_template(
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/alembic/script/base.py", line 596, in _generate_template
+    util.template_to_file(src, dest, self.output_encoding, **kw)
+  File "/home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/alembic/util/pyfiles.py", line 41, in template_to_file
+    with open(dest, "wb") as f:
+         ^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/workspace/migrations/versions/66d65c681429_add_notes_field_to_templateexercise.py'
